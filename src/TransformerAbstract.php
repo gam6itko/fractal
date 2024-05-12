@@ -16,14 +16,17 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Resource\NullResource;
 use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\ResourceInterface;
+use League\Fractal\Transformer\HasIncludesInterface;
 
 /**
  * All Transformer classes should extend this to utilize the convenience methods
  * collection() and item(), and make the self::$availableIncludes property available.
  * Extend it and add a `transform()` method to transform any default or included data
  * into a basic array.
+ *
+ * @method transform(array $data, ScopeInterface $scope): array
  */
-abstract class TransformerAbstract
+abstract class TransformerAbstract implements HasIncludesInterface
 {
     /**
      * Resources that can be included if requested.
@@ -34,11 +37,6 @@ abstract class TransformerAbstract
      * Include resources without needing it to be requested.
      */
     protected array $defaultIncludes = [];
-
-    /**
-     * The transformer should know about the current scope, so we can fetch relevant params.
-     */
-    protected ?Scope $currentScope = null;
 
     /**
      * Getter for availableIncludes.
@@ -57,17 +55,9 @@ abstract class TransformerAbstract
     }
 
     /**
-     * Getter for currentScope.
-     */
-    public function getCurrentScope(): ?Scope
-    {
-        return $this->currentScope;
-    }
-
-    /**
      * Figure out which includes we need.
      */
-    private function figureOutWhichIncludes(Scope $scope): array
+    private function figureOutWhichIncludes(ScopeInterface $scope): array
     {
         $includes = $this->getDefaultIncludes();
 
@@ -93,10 +83,8 @@ abstract class TransformerAbstract
      * @internal
      *
      * @param mixed $data
-     *
-     * @return array|false
      */
-    public function processIncludedResources(Scope $scope, $data)
+    public function processIncludedResources(ScopeInterface $scope, $data): ?array
     {
         $includedData = [];
 
@@ -111,19 +99,19 @@ abstract class TransformerAbstract
             );
         }
 
-        return $includedData === [] ? false : $includedData;
+        return $includedData === [] ? null : $includedData;
     }
 
     /**
      * Include a resource only if it is available on the method.
      *
-     * @param mixed  $data
+     * @param mixed $data
      */
     private function includeResourceIfAvailable(
-        Scope $scope,
-        $data,
-        array $includedData,
-        string $include
+        ScopeInterface $scope,
+                       $data,
+        array          $includedData,
+        string         $include
     ): array {
         if ($resource = $this->callIncludeMethod($scope, $include, $data)) {
             $childScope = $scope->embedChildScope($include, $resource);
@@ -143,13 +131,11 @@ abstract class TransformerAbstract
      *
      * @internal
      *
-     * @param mixed  $data
+     * @param mixed $data
      *
      * @throws \Exception
-     *
-     * @return \League\Fractal\Resource\ResourceInterface|false
      */
-    protected function callIncludeMethod(Scope $scope, string $includeName, $data)
+    protected function callIncludeMethod(ScopeInterface $scope, string $includeName, $data): ?ResourceInterface
     {
         $scopeIdentifier = $scope->getIdentifier($includeName);
 
@@ -170,10 +156,10 @@ abstract class TransformerAbstract
             ))
         );
 
-        $resource = call_user_func([$this, $methodName], $data, $params);
+        $resource = call_user_func([$this, $methodName], $data, $params, $scope);
 
         if ($resource === null) {
-            return false;
+            return null;
         }
 
         if (! $resource instanceof ResourceInterface) {
@@ -205,16 +191,6 @@ abstract class TransformerAbstract
     public function setDefaultIncludes(array $defaultIncludes): self
     {
         $this->defaultIncludes = $defaultIncludes;
-
-        return $this;
-    }
-
-    /**
-     * Setter for currentScope.
-     */
-    public function setCurrentScope(Scope $currentScope): self
-    {
-        $this->currentScope = $currentScope;
 
         return $this;
     }
