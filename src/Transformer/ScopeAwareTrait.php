@@ -6,6 +6,9 @@ namespace League\Fractal\Transformer;
 
 use League\Fractal\Scope;
 
+/**
+ * For backward compatibility only. You should avoid to use this trait.
+ */
 trait ScopeAwareTrait
 {
     /**
