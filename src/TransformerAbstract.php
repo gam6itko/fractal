@@ -42,6 +42,13 @@ abstract class TransformerAbstract implements HasIncludesInterface
     protected array $defaultIncludes = [];
 
     /**
+     * The transformer should know about the current scope, so we can fetch relevant params.
+     *
+     * @deprecated Transformer must use Scope from method arguments.
+     */
+    protected ?Scope $currentScope = null;
+
+    /**
      * Getter for availableIncludes.
      */
     public function getAvailableIncludes(): array
@@ -55,6 +62,16 @@ abstract class TransformerAbstract implements HasIncludesInterface
     public function getDefaultIncludes(): array
     {
         return $this->defaultIncludes;
+    }
+
+    /**
+     * Getter for currentScope.
+     *
+     * @deprecated Transformer must use Scope from method arguments.
+     */
+    public function getCurrentScope(): ?Scope
+    {
+        return $this->currentScope;
     }
 
     /**
@@ -182,6 +199,18 @@ abstract class TransformerAbstract implements HasIncludesInterface
     public function setDefaultIncludes(array $defaultIncludes): self
     {
         $this->defaultIncludes = $defaultIncludes;
+
+        return $this;
+    }
+
+    /**
+     * Setter for currentScope.
+     *
+     * @deprecated Transformer must use Scope from method arguments.
+     */
+    public function setCurrentScope(Scope $currentScope): self
+    {
+        $this->currentScope = $currentScope;
 
         return $this;
     }

@@ -270,6 +270,7 @@ class Scope implements \JsonSerializable, ScopeInterface
             $transformedData = call_user_func($transformer, $data);
         } else {
             \assert(\method_exists($transformer, 'transform'));
+            $transformer->setCurrentScope($this); //todo-remove
             $transformedData = $transformer->transform($data, $this);
         }
 
@@ -354,6 +355,7 @@ class Scope implements \JsonSerializable, ScopeInterface
             $transformedData = call_user_func($transformer, $data);
         } else {
             \assert(\method_exists($transformer, 'transform'));
+            $transformer->setCurrentScope($this); //todo-remove
             $transformedData = $transformer->transform($data, $this);
         }
 

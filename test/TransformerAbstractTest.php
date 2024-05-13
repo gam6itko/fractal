@@ -52,6 +52,39 @@ class TransformerAbstractTest extends TestCase
         $this->assertSame(['foo', 'bar'], $transformer->getDefaultIncludes());
     }
 
+    /**
+     * @covers \League\Fractal\TransformerAbstract::setCurrentScope
+     */
+    public function testSetCurrentScope()
+    {
+        $transformer = $this->getMockForAbstractClass('League\Fractal\TransformerAbstract');
+        $manager = new Manager();
+        $scope = new Scope($manager, m::mock('League\Fractal\Resource\ResourceAbstract'));
+        $this->assertInstanceOf('League\Fractal\TransformerAbstract', $transformer->setCurrentScope($scope));
+    }
+
+    /**
+     * @covers \League\Fractal\TransformerAbstract::getCurrentScope
+     */
+    public function testGetCurrentScope()
+    {
+        $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
+        $manager = new Manager();
+        $scope = new Scope($manager, m::mock('League\Fractal\Resource\ResourceAbstract'));
+        $transformer->setCurrentScope($scope);
+        $this->assertSame($transformer->getCurrentScope(), $scope);
+    }
+
+    /**
+     * @covers \League\Fractal\TransformerAbstract::getCurrentScope
+     */
+    public function testCanAccessScopeBeforeInitialization()
+    {
+        $transformer = $this->getMockForAbstractClass('League\Fractal\TransformerAbstract');
+        $currentScope = $transformer->getCurrentScope();
+        $this->assertNull($currentScope);
+    }
+
     public function testProcessEmbeddedResourcesNoAvailableIncludes()
     {
         $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
