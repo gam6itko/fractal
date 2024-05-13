@@ -25,6 +25,8 @@ use League\Fractal\Transformer\ScopeAwareTrait;
  * into a basic array.
  *
  * @method transform(array $data, ScopeInterface $scope): array
+ *
+ * @deprecated You should build your own AbstractTransformer without ScopeAwareTrait.
  */
 abstract class TransformerAbstract implements HasIncludesInterface, ScopeAwareInterface
 {
