@@ -29,7 +29,6 @@ trait IncludeMethodBuildTrait
                 ))
             );
 
-            \assert(\method_exists($this, $methodName)); //todo throw exception
             $this->includeMethodCache[$includeName] = $methodName;
         }
 
