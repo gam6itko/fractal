@@ -18,6 +18,7 @@ use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\NullResource;
 use League\Fractal\Resource\ResourceInterface;
 use League\Fractal\Serializer\Serializer;
+use League\Fractal\Transformer\HasIncludesInterface;
 use League\Fractal\Transformer\ScopeAwareInterface;
 
 /**
@@ -347,7 +348,7 @@ class Scope implements \JsonSerializable, ScopeInterface
      *
      * @internal
      *
-     * @param TransformerAbstract|callable $transformer
+     * @param object|callable $transformer
      * @param mixed                        $data
      */
     protected function fireTransformer($transformer, $data): array
@@ -380,10 +381,9 @@ class Scope implements \JsonSerializable, ScopeInterface
      *
      * @internal
      *
-     * @param \League\Fractal\TransformerAbstract $transformer
      * @param mixed                               $data
      */
-    protected function fireIncludedTransformers($transformer, $data): array
+    protected function fireIncludedTransformers(HasIncludesInterface $transformer, $data): array
     {
         $this->availableIncludes = $transformer->getAvailableIncludes();
 
@@ -395,11 +395,11 @@ class Scope implements \JsonSerializable, ScopeInterface
      *
      * @internal
      *
-     * @param TransformerAbstract|callable $transformer
+     * @param object|HasIncludesInterface|callable $transformer
      */
     protected function transformerHasIncludes($transformer): bool
     {
-        if (! $transformer instanceof TransformerAbstract) {
+        if (! $transformer instanceof HasIncludesInterface) {
             return false;
         }
 
