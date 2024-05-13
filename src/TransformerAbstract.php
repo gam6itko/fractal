@@ -17,6 +17,7 @@ use League\Fractal\Resource\NullResource;
 use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\ResourceInterface;
 use League\Fractal\Transformer\HasIncludesInterface;
+use League\Fractal\Transformer\IncludeMethodBuildTrait;
 
 /**
  * All Transformer classes should extend this to utilize the convenience methods
@@ -28,6 +29,8 @@ use League\Fractal\Transformer\HasIncludesInterface;
  */
 abstract class TransformerAbstract implements HasIncludesInterface
 {
+    use IncludeMethodBuildTrait;
+
     /**
      * Resources that can be included if requested.
      */
@@ -142,19 +145,7 @@ abstract class TransformerAbstract implements HasIncludesInterface
         $params = $scope->getManager()->getIncludeParams($scopeIdentifier);
 
         // Check if the method name actually exists
-        $methodName = 'include'.str_replace(
-            ' ',
-            '',
-            ucwords(str_replace(
-                '_',
-                ' ',
-                str_replace(
-                    '-',
-                    ' ',
-                    $includeName
-                )
-            ))
-        );
+        $methodName = $this->buildMethodName($includeName);
 
         $resource = call_user_func([$this, $methodName], $data, $params, $scope);
 
