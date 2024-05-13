@@ -18,6 +18,7 @@ use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\NullResource;
 use League\Fractal\Resource\ResourceInterface;
 use League\Fractal\Serializer\Serializer;
+use League\Fractal\Transformer\ScopeAwareInterface;
 
 /**
  * Scope
@@ -170,7 +171,7 @@ class Scope implements \JsonSerializable, ScopeInterface
      */
     public function toArray(): ?array
     {
-        list($rawData, $rawIncludedData) = $this->executeResourceTransformers();
+        [$rawData, $rawIncludedData] = $this->executeResourceTransformers();
 
         $serializer = $this->manager->getSerializer();
 
@@ -269,8 +270,10 @@ class Scope implements \JsonSerializable, ScopeInterface
         } elseif (is_callable($transformer)) {
             $transformedData = call_user_func($transformer, $data);
         } else {
+            if ($transformer instanceof ScopeAwareInterface) {
+                $transformer->setCurrentScope($this);
+            }
             \assert(\method_exists($transformer, 'transform'));
-            $transformer->setCurrentScope($this); //todo-remove
             $transformedData = $transformer->transform($data, $this);
         }
 
@@ -290,10 +293,10 @@ class Scope implements \JsonSerializable, ScopeInterface
         $transformedData = $includedData = [];
 
         if ($this->resource instanceof Item) {
-            list($transformedData, $includedData[]) = $this->fireTransformer($transformer, $data);
+            [$transformedData, $includedData[]] = $this->fireTransformer($transformer, $data);
         } elseif ($this->resource instanceof Collection) {
             foreach ($data as $value) {
-                list($transformedData[], $includedData[]) = $this->fireTransformer($transformer, $value);
+                [$transformedData[], $includedData[]] = $this->fireTransformer($transformer, $value);
             }
         } elseif ($this->resource instanceof NullResource) {
             $transformedData = null;
@@ -354,8 +357,10 @@ class Scope implements \JsonSerializable, ScopeInterface
         if (is_callable($transformer)) {
             $transformedData = call_user_func($transformer, $data);
         } else {
+            if ($transformer instanceof ScopeAwareInterface) {
+                $transformer->setCurrentScope($this);
+            }
             \assert(\method_exists($transformer, 'transform'));
-            $transformer->setCurrentScope($this); //todo-remove
             $transformedData = $transformer->transform($data, $this);
         }
 

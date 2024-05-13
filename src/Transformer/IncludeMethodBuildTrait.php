@@ -7,7 +7,7 @@ namespace League\Fractal\Transformer;
 trait IncludeMethodBuildTrait
 {
     /**
-     * @var array<string, callable>
+     * @var array<string, string>
      */
     private array $includeMethodCache = [];
 
