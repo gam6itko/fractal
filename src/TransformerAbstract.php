@@ -23,7 +23,7 @@ use League\Fractal\Transformer\ScopeAwareTrait;
  * Extend it and add a `transform()` method to transform any default or included data
  * into a basic array.
  *
- * @method transform(array $data, ScopeInterface $scope): array
+ * @method array transform(array $data, ScopeInterface $scope)
  *
  * @deprecated You should build your own AbstractTransformer without ScopeAwareTrait.
  */

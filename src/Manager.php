@@ -75,7 +75,7 @@ class Manager implements ManagerInterface, ArtifactsAwareInterface
     protected ParamBag $artifacts;
 
     public function __construct(
-        ScopeFactoryInterface $scopeFactory = null,
+        ?ScopeFactoryInterface $scopeFactory = null,
         array                 $defaultParams = [],
     ) {
         $this->scopeFactory = $scopeFactory ?: new ScopeFactory();
@@ -89,7 +89,7 @@ class Manager implements ManagerInterface, ArtifactsAwareInterface
     public function createData(
         ResourceInterface $resource,
         ?string           $scopeIdentifier = null,
-        ScopeInterface    $parentScopeInstance = null,
+        ?ScopeInterface    $parentScopeInstance = null,
     ): ScopeInterface {
         if ($parentScopeInstance !== null) {
             return $this->scopeFactory->createChildScopeFor($this, $parentScopeInstance, $resource, $scopeIdentifier);

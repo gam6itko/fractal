@@ -22,6 +22,6 @@ interface ManagerInterface
     public function createData(
         ResourceInterface $resource,
         ?string           $scopeIdentifier = null,
-        ScopeInterface    $parentScopeInstance = null,
+        ?ScopeInterface    $parentScopeInstance = null,
     ): ScopeInterface;
 }
