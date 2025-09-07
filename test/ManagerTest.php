@@ -1,10 +1,13 @@
 <?php namespace League\Fractal\Test;
 
-use InvalidArgumentException;
+use League\Fractal\ArtifactsAwareInterface;
 use League\Fractal\Manager;
 use League\Fractal\ParamBag;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use League\Fractal\Resource\NullResource;
+use League\Fractal\Resource\ResourceInterface;
+use League\Fractal\Scope;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -226,5 +229,98 @@ class ManagerTest extends TestCase
     public function tearDown(): void
     {
         Mockery::close();
+    }
+
+    public function testIncludeParams(): void
+    {
+        $transformer = new class($this) extends \League\Fractal\TransformerAbstract {
+            public function __construct(
+                private readonly TestCase $t,
+            )
+            {
+            }
+
+            public function transform(array $data): array
+            {
+                return [];
+            }
+
+            public function getAvailableIncludes(): array
+            {
+                return ['incFoo', 'incBar', 'incBaz'];
+            }
+
+            public function includeIncFoo($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(10, $params->get('foo'));
+                $this->t::assertSame(20, $params->get('bar'));
+                $this->t::assertSame(null, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('foo', true);
+
+                return new NullResource();
+            }
+
+            public function includeIncBar($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(100, $params->get('foo'));
+                $this->t::assertSame(200, $params->get('bar'));
+                $this->t::assertSame(null, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('bar', true);
+
+                return new NullResource();
+            }
+
+            public function includeIncBaz($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(1, $params->get('foo'));
+                $this->t::assertSame(2, $params->get('bar'));
+                $this->t::assertSame(3, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('baz', true);
+
+                return new NullResource();
+            }
+        };
+
+        $manager = new Manager(
+            scopeFactory: null,
+            defaultParams: [
+                'foo' => 1,
+                'bar' => 2,
+                'baz' => 3,
+            ],
+        );
+        $result = $manager
+            ->parseIncludes(['incFoo', 'incBar', 'incBaz'])
+            ->includeParams('incFoo', ['foo' => 10, 'bar' => 20])
+            ->includeParams('incBar', ['foo' => 100, 'bar' => 200])
+            ->createData(new Item([], $transformer))
+            ->toArray();
+
+        self::assertSame(true, $manager->artifacts()->get('foo'));
+        self::assertSame(true, $manager->artifacts()->get('bar'));
+        self::assertSame(true, $manager->artifacts()->get('baz'));
+
+        self::assertSame([
+            'data' => [
+                'incFoo' => [
+                    'data' => [],
+                ],
+                'incBar' => [
+                    'data' => [],
+                ],
+                'incBaz' => [
+                    'data' => [],
+                ],
+            ],
+        ], $result);
     }
 }

@@ -21,8 +21,10 @@ use League\Fractal\Serializer\Serializer;
  * Not a wildly creative name, but the manager is what a Fractal user will interact
  * with the most. The manager has various configurable options, and allows users
  * to create the "root scope" easily.
+ *
+ * Mutable. Do not store it as a singleton!
  */
-class Manager implements ManagerInterface
+class Manager implements ManagerInterface, ArtifactsAwareInterface
 {
     /**
      * Array of scope identifiers for resources to include.
@@ -65,17 +67,20 @@ class Manager implements ManagerInterface
      */
     private ScopeFactoryInterface $scopeFactory;
 
+    protected ParamBag $defaultParams;
+
     /**
      * @var ParamBag For cases then transformer wants to store some data for later use.
      */
     protected ParamBag $artifacts;
 
     public function __construct(
-        ScopeFactoryInterface     $scopeFactory = null,
-        private readonly ParamBag $globalParamBag = new ParamBag([]),
+        ScopeFactoryInterface $scopeFactory = null,
+        array                 $defaultParams = [],
     )
     {
         $this->scopeFactory = $scopeFactory ?: new ScopeFactory();
+        $this->defaultParams = new ParamBag($defaultParams, false);
         $this->artifacts = new ParamBag([], true);
     }
 
@@ -98,14 +103,14 @@ class Manager implements ManagerInterface
     public function getIncludeParams(string $include): ParamBag
     {
         $params = $this->includeParams[$include] ?? null;
-        if ($params === null) {
-            return $this->globalParamBag;
+        if (null === $params) {
+            return $this->defaultParams;
         }
 
         return $params;
     }
 
-    public function setIncludeParams(string $includeName, array $params): self
+    public function includeParams(string $includeName, array $params): self
     {
         $this->includeParams[$includeName] = new ParamBag($params, false);
         return $this;
@@ -174,9 +179,11 @@ class Manager implements ManagerInterface
 
             // [0] is full matched strings...
             $modifierCount = \count($allModifiersArr[0]);
+            if ($modifierCount === 0) {
+                continue;
+            }
 
             $modifierArr = [];
-
             for ($modifierIt = 0; $modifierIt < $modifierCount; $modifierIt++) {
                 // [1] is the modifier
                 $modifierName = $allModifiersArr[1][$modifierIt];

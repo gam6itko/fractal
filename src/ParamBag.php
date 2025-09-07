@@ -26,7 +26,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      */
     public function __construct(
         array                 $params,
-        private readonly bool $allowModifying = false,
+        private readonly bool $allowModify = false,
     )
     {
         $this->params = $params;
@@ -45,7 +45,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
 
     public function set(string $key, mixed $value): void
     {
-        if ($this->allowModifying) {
+        if (false === $this->allowModify) {
             throw new \LogicException('Modifying parameters is not permitted');
         }
         $this->params[$key] = $value;
@@ -79,7 +79,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      */
     public function __set(string $key, mixed $value): void
     {
-        if ($this->allowModifying) {
+        if (false === $this->allowModify) {
             throw new \LogicException('Modifying parameters is not permitted');
         }
         $this->params[$key] = $value;
@@ -93,7 +93,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      */
     public function __unset(string $key): void
     {
-        if ($this->allowModifying) {
+        if (false === $this->allowModify) {
             throw new \LogicException('Modifying parameters is not permitted');
         }
         unset($this->params[$key]);
@@ -132,7 +132,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetSet($offset, mixed $value): void
     {
-        if ($this->allowModifying) {
+        if (false === $this->allowModify) {
             throw new \LogicException('Modifying parameters is not permitted');
         }
         $this->set($offset, $value);
@@ -147,7 +147,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetUnset($offset): void
     {
-        if ($this->allowModifying) {
+        if (false === $this->allowModify) {
             throw new \LogicException('Modifying parameters is not permitted');
         }
     }
