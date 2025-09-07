@@ -15,7 +15,7 @@ class DataArraySerializerTest extends TestCase
     public function testSerializingItemResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new DataArraySerializer());
 
         $bookData = [
@@ -49,7 +49,7 @@ class DataArraySerializerTest extends TestCase
         $expected = [
             'data' => [
                 'title' => 'Foo',
-            ]
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -58,8 +58,8 @@ class DataArraySerializerTest extends TestCase
         $expected = [
             'data' => [
                 'title' => 'Foo',
-                'year' => 1991
-            ]
+                'year' => 1991,
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -70,10 +70,10 @@ class DataArraySerializerTest extends TestCase
                 'title' => 'Foo',
                 'author' => [
                     'data' => [
-                        'name' => 'Dave'
-                    ]
-                ]
-            ]
+                        'name' => 'Dave',
+                    ],
+                ],
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -111,13 +111,13 @@ class DataArraySerializerTest extends TestCase
                 'title' => 'Foo',
                 'author' => [
                     'data' => [
-                        'name' => 'Dave'
+                        'name' => 'Dave',
 
-                    ]
-                ]
+                    ],
+                ],
             ],
             'meta' => [
-                'foo' => 'bar'
+                'foo' => 'bar',
             ],
         ];
         $this->assertSame($expected, $scope->toArray());
@@ -126,7 +126,7 @@ class DataArraySerializerTest extends TestCase
     public function testSerializingCollectionResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new DataArraySerializer());
 
         $booksData = [
@@ -184,7 +184,7 @@ class DataArraySerializerTest extends TestCase
         $expected = [
             'data' => [
                 ['title' => 'Foo'],
-                ['title' => 'Bar']
+                ['title' => 'Bar'],
             ],
         ];
         $this->assertSame($expected, $scope->toArray());
@@ -195,12 +195,12 @@ class DataArraySerializerTest extends TestCase
             'data' => [
                 [
                     'title' => 'Foo',
-                    'year' => 1991
+                    'year' => 1991,
                 ],
                 [
                     'title' => 'Bar',
-                    'year' => 1997
-                ]
+                    'year' => 1997,
+                ],
             ],
         ];
         $this->assertSame($expected, $scope->toArray());
@@ -213,19 +213,19 @@ class DataArraySerializerTest extends TestCase
                     'title' => 'Foo',
                     'author' => [
                         'data' => [
-                            'name' => 'Dave'
-                        ]
-                    ]
+                            'name' => 'Dave',
+                        ],
+                    ],
                 ],
                 [
                     'title' => 'Bar',
                     'author' => [
                         'data' => [
-                            'name' => 'Bob'
-                        ]
-                    ]
-                ]
-            ]
+                            'name' => 'Bob',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -277,22 +277,22 @@ class DataArraySerializerTest extends TestCase
                     'title' => 'Foo',
                     'author' => [
                         'data' => [
-                            'name' => 'Dave'
-                        ]
-                    ]
+                            'name' => 'Dave',
+                        ],
+                    ],
                 ],
                 [
                     'title' => 'Bar',
                     'author' => [
                         'data' => [
-                            'name' => 'Bob'
-                        ]
-                    ]
-                ]
+                            'name' => 'Bob',
+                        ],
+                    ],
+                ],
             ],
             'meta' => [
-                'foo' => 'bar'
-            ]
+                'foo' => 'bar',
+            ],
         ];
 
         $this->assertSame($expected, $scope->toArray());
@@ -301,7 +301,7 @@ class DataArraySerializerTest extends TestCase
     public function testSerializingNullResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new DataArraySerializer());
 
         $bookData = [

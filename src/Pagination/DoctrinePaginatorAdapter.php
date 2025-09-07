@@ -65,11 +65,13 @@ class DoctrinePaginatorAdapter implements PaginatorInterface
      */
     public function getTotal(): int
     {
-        return count($this->paginator);
+        return \count($this->paginator);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-suppress UndefinedInterfaceMethod
      */
     public function getCount(): int
     {
@@ -82,7 +84,7 @@ class DoctrinePaginatorAdapter implements PaginatorInterface
      */
     public function getPerPage(): int
     {
-        return $this->paginator->getQuery()->getMaxResults();
+        return $this->paginator->getQuery()->getMaxResults() ?? 0;
     }
 
     /**
@@ -90,7 +92,7 @@ class DoctrinePaginatorAdapter implements PaginatorInterface
      */
     public function getUrl(int $page): string
     {
-        return call_user_func($this->getRouteGenerator(), $page);
+        return \call_user_func($this->getRouteGenerator(), $page);
     }
 
     /**

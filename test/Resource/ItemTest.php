@@ -19,7 +19,7 @@ class ItemTest extends TestCase
     {
         $item = new Item($this->simpleItem, function () {});
 
-        $this->assertTrue(is_callable($item->getTransformer()));
+        $this->assertTrue(\is_callable($item->getTransformer()));
 
         $transformer = 'thismightbeacallablestring';
         $item = new Item($this->simpleItem, $transformer);

@@ -15,35 +15,12 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Test that some includes provided returns self
-        $this->assertInstanceOf(get_class($manager), $manager->parseIncludes(['foo']));
-    }
-
-    public function testInvalidParseInclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseIncludes() method expects a string or an array. NULL given'));
-
-        $manager = new Manager();
-
-        $manager->parseIncludes(null);
-    }
-
-    public function testIceTParseInclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseIncludes() method expects a string or an array. integer given'));
-
-        $manager = new Manager();
-
-        $manager->parseIncludes(99);
+        $this->assertInstanceOf(\get_class($manager), $manager->parseIncludes(['foo']));
     }
 
     public function testParseIncludes()
     {
         $manager = new Manager();
-
-        // Does a CSV string work
-        $manager->parseIncludes('foo,bar');
-
-        $this->assertSame(['foo', 'bar'], $manager->getRequestedIncludes());
 
         // Does a big array of stuff work
         $manager->parseIncludes(['foo', 'bar', 'bar.baz']);
@@ -63,7 +40,7 @@ class ManagerTest extends TestCase
 
 
         // See if fancy syntax works
-        $manager->parseIncludes('foo:limit(5|1):order(-something):anotherparam');
+        $manager->parseIncludes(['foo:limit(5|1):order(-something):anotherparam']);
 
         $params = $manager->getIncludeParams('foo');
 
@@ -77,7 +54,7 @@ class ManagerTest extends TestCase
         $this->assertNull($params['totallymadeup']);
 
         // Relation with params and sub relation
-        $manager->parseIncludes('foo:limit(5|1):order(name).bar,baz');
+        $manager->parseIncludes(['foo:limit(5|1):order(name).bar', 'baz']);
 
         $params = $manager->getIncludeParams('foo');
 
@@ -93,35 +70,12 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Test that some excludes provided returns self
-        $this->assertInstanceOf(get_class($manager), $manager->parseExcludes(['foo']));
-    }
-
-    public function testInvalidParseExclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseExcludes() method expects a string or an array. NULL given'));
-
-        $manager = new Manager();
-
-        $manager->parseExcludes(null);
-    }
-
-    public function testIceTParseExclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseExcludes() method expects a string or an array. integer given'));
-
-        $manager = new Manager();
-
-        $manager->parseExcludes(99);
+        $this->assertInstanceOf(\get_class($manager), $manager->parseExcludes(['foo']));
     }
 
     public function testParseExcludes()
     {
         $manager = new Manager();
-
-        // Does a CSV string work
-        $manager->parseExcludes('foo,bar');
-
-        $this->assertSame(['foo', 'bar'], $manager->getRequestedExcludes());
 
         // Does a big array of stuff work
         $manager->parseExcludes(['foo', 'bar', 'bar.baz']);
@@ -141,7 +95,7 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Should limit to 10 by default
-        $manager->parseIncludes('a.b.c.d.e.f.g.h.i.j.NEVER');
+        $manager->parseIncludes(['a.b.c.d.e.f.g.h.i.j.NEVER']);
 
         $this->assertSame(
             [
@@ -159,7 +113,7 @@ class ManagerTest extends TestCase
             $manager->getRequestedIncludes()
         );
 
-        $manager->parseIncludes('a:limit(5|1).b.c.d.e.f.g.h.i.j.NEVER');
+        $manager->parseIncludes(['a:limit(5|1).b.c.d.e.f.g.h.i.j.NEVER']);
 
         $this->assertSame(
             [
@@ -179,7 +133,7 @@ class ManagerTest extends TestCase
 
         // Try setting to 3 and see what happens
         $manager->setRecursionLimit(3);
-        $manager->parseIncludes('a.b.c.NEVER');
+        $manager->parseIncludes(['a.b.c.NEVER']);
 
         $this->assertSame(
             [
@@ -190,7 +144,7 @@ class ManagerTest extends TestCase
             $manager->getRequestedIncludes()
         );
 
-        $manager->parseIncludes('a:limit(5|1).b.c.NEVER');
+        $manager->parseIncludes(['a:limit(5|1).b.c.NEVER']);
 
         $this->assertSame(
             [
@@ -240,12 +194,12 @@ class ManagerTest extends TestCase
 
         $fields = [
             'articles' => 'title,body',
-            'people' => 'name'
+            'people' => 'name',
         ];
 
         $expectedFieldset = [
-            'articles' => ['title' , 'body'],
-            'people' => ['name']
+            'articles' => ['title', 'body'],
+            'people' => ['name'],
         ];
 
         $manager->parseFieldsets($fields);

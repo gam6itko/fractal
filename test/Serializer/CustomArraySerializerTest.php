@@ -15,7 +15,7 @@ class CustomArraySerializerTest extends TestCase
     public function testAllowNullResourceKey()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new RootSerializer());
 
         $bookData = [
@@ -45,7 +45,7 @@ class CustomArraySerializerTest extends TestCase
     public function testMismatchedResourceKey()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new RootSerializer());
 
         $bookData = [
@@ -66,7 +66,7 @@ class CustomArraySerializerTest extends TestCase
                 'author' => [
                     'data' => [
                         'name' => 'Dave',
-                    ]
+                    ],
                 ],
             ],
         ];

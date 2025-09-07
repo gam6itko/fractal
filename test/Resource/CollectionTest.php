@@ -35,7 +35,7 @@ class CollectionTest extends TestCase
     {
         $resource = new Collection($this->simpleCollection, function () {
         });
-        $this->assertTrue(is_callable($resource->getTransformer()));
+        $this->assertTrue(\is_callable($resource->getTransformer()));
 
         $resource = new Collection($this->simpleCollection, 'SomeClass');
         $this->assertSame($resource->getTransformer(), 'SomeClass');

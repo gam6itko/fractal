@@ -14,8 +14,8 @@ namespace League\Fractal;
 use InvalidArgumentException;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
-use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\NullResource;
+use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\ResourceInterface;
 use League\Fractal\Serializer\Serializer;
 use League\Fractal\Transformer\HasIncludesInterface;
@@ -99,14 +99,14 @@ class Scope implements \JsonSerializable, ScopeInterface
      * That means, if a.b.c is requested and the current scope is a.b, then c is allowed. If the current
      * scope is a then c is not allowed, even if it is there and potentially transformable.
      *
+     * @return bool Returns the new number of elements in the array.
      * @internal
      *
-     * @return bool Returns the new number of elements in the array.
      */
     public function isRequested(string $checkScopeSegment): bool
     {
         if ($this->parentScopes) {
-            $scopeArray = array_slice($this->parentScopes, 1);
+            $scopeArray = \array_slice($this->parentScopes, 1);
             array_push($scopeArray, $this->scopeIdentifier, $checkScopeSegment);
         } else {
             $scopeArray = [$checkScopeSegment];
@@ -114,7 +114,7 @@ class Scope implements \JsonSerializable, ScopeInterface
 
         $scopeString = implode('.', $scopeArray);
 
-        return in_array($scopeString, $this->manager->getRequestedIncludes());
+        return \in_array($scopeString, $this->manager->getRequestedIncludes());
     }
 
     /**
@@ -128,7 +128,7 @@ class Scope implements \JsonSerializable, ScopeInterface
     public function isExcluded(string $checkScopeSegment): bool
     {
         if ($this->parentScopes) {
-            $scopeArray = array_slice($this->parentScopes, 1);
+            $scopeArray = \array_slice($this->parentScopes, 1);
             array_push($scopeArray, $this->scopeIdentifier, $checkScopeSegment);
         } else {
             $scopeArray = [$checkScopeSegment];
@@ -136,7 +136,7 @@ class Scope implements \JsonSerializable, ScopeInterface
 
         $scopeString = implode('.', $scopeArray);
 
-        return in_array($scopeString, $this->manager->getRequestedExcludes());
+        return \in_array($scopeString, $this->manager->getRequestedExcludes());
     }
 
     /**
@@ -144,9 +144,9 @@ class Scope implements \JsonSerializable, ScopeInterface
      *
      * Push a scope identifier into parentScopes
      *
+     * @return int Returns the new number of elements in the array.
      * @internal
      *
-     * @return int Returns the new number of elements in the array.
      */
     public function pushParentScope(string $identifierSegment): int
     {
@@ -156,9 +156,9 @@ class Scope implements \JsonSerializable, ScopeInterface
     /**
      * Set parent scopes.
      *
+     * @param list<string> $parentScopes Value to set.
      * @internal
      *
-     * @param list<string> $parentScopes Value to set.
      */
     public function setParentScopes(array $parentScopes): self
     {
@@ -182,7 +182,7 @@ class Scope implements \JsonSerializable, ScopeInterface
         // serialize the included data and merge it with the data.
         if ($serializer->sideloadIncludes()) {
             //Filter out any relation that wasn't requested
-            $rawIncludedData = array_map(array($this, 'filterFieldsets'), $rawIncludedData);
+            $rawIncludedData = array_map([$this, 'filterFieldsets'], $rawIncludedData);
 
             $includedData = $serializer->includedData($this->resource, $rawIncludedData);
 
@@ -213,7 +213,7 @@ class Scope implements \JsonSerializable, ScopeInterface
                 $pagination = $serializer->paginator($this->resource->getPaginator());
             }
 
-            if (! empty($pagination)) {
+            if (!empty($pagination)) {
                 $this->resource->setMetaValue(key($pagination), current($pagination));
             }
         }
@@ -222,7 +222,7 @@ class Scope implements \JsonSerializable, ScopeInterface
         $meta = $serializer->meta($this->resource->getMeta());
 
         // in case of returning NullResource we should return null and not to go with array_merge
-        if (is_null($data)) {
+        if (\is_null($data)) {
             if (!empty($meta)) {
                 return $meta;
             }
@@ -243,10 +243,14 @@ class Scope implements \JsonSerializable, ScopeInterface
 
     /**
      * Convert the current data for this scope to JSON.
+     *
+     * @throws \JsonException
      */
     public function toJson(int $options = 0): string
     {
-        return \json_encode($this, $options);
+        $result = \json_encode($this, $options, \JSON_THROW_ON_ERROR);
+        \assert(\is_string($result));
+        return $result;
     }
 
     /**
@@ -257,7 +261,7 @@ class Scope implements \JsonSerializable, ScopeInterface
     #[\ReturnTypeWillChange]
     public function transformPrimitiveResource()
     {
-        if (! ($this->resource instanceof Primitive)) {
+        if (!($this->resource instanceof Primitive)) {
             throw new InvalidArgumentException(
                 'Argument $resource should be an instance of League\Fractal\Resource\Primitive'
             );
@@ -268,13 +272,13 @@ class Scope implements \JsonSerializable, ScopeInterface
 
         if (null === $transformer) {
             $transformedData = $data;
-        } elseif (is_callable($transformer)) {
-            $transformedData = call_user_func($transformer, $data);
+        } elseif (\is_callable($transformer)) {
+            $transformedData = \call_user_func($transformer, $data);
         } else {
             if ($transformer instanceof ScopeAwareInterface) {
                 $transformer->setCurrentScope($this);
             }
-            \assert(\method_exists($transformer, 'transform'));
+            \assert(method_exists($transformer, 'transform'));
             $transformedData = $transformer->transform($data, $this);
         }
 
@@ -305,7 +309,7 @@ class Scope implements \JsonSerializable, ScopeInterface
         } else {
             throw new InvalidArgumentException(
                 'Argument $resource should be an instance of League\Fractal\Resource\Item'
-                .' or League\Fractal\Resource\Collection'
+                . ' or League\Fractal\Resource\Collection'
             );
         }
 
@@ -315,9 +319,9 @@ class Scope implements \JsonSerializable, ScopeInterface
     /**
      * Serialize a resource
      *
+     * @param mixed $data
      * @internal
      *
-     * @param mixed $data
      */
     protected function serializeResource(Serializer $serializer, $data): ?array
     {
@@ -346,22 +350,22 @@ class Scope implements \JsonSerializable, ScopeInterface
     /**
      * Fire the main transformer.
      *
+     * @param object|callable $transformer
+     * @param mixed $data
      * @internal
      *
-     * @param object|callable $transformer
-     * @param mixed                        $data
      */
     protected function fireTransformer($transformer, $data): array
     {
         $includedData = [];
 
-        if (is_callable($transformer)) {
-            $transformedData = call_user_func($transformer, $data);
+        if (\is_callable($transformer)) {
+            $transformedData = \call_user_func($transformer, $data);
         } else {
             if ($transformer instanceof ScopeAwareInterface) {
                 $transformer->setCurrentScope($this);
             }
-            \assert(\method_exists($transformer, 'transform'));
+            \assert(method_exists($transformer, 'transform'));
             $transformedData = $transformer->transform($data, $this);
         }
 
@@ -379,9 +383,9 @@ class Scope implements \JsonSerializable, ScopeInterface
     /**
      * Fire the included transformers.
      *
+     * @param mixed $data
      * @internal
      *
-     * @param mixed                               $data
      */
     protected function fireIncludedTransformers(HasIncludesInterface $transformer, $data): array
     {
@@ -393,20 +397,20 @@ class Scope implements \JsonSerializable, ScopeInterface
     /**
      * Determine if a transformer has any available includes.
      *
+     * @param object|HasIncludesInterface|callable $transformer
      * @internal
      *
-     * @param object|HasIncludesInterface|callable $transformer
      */
     protected function transformerHasIncludes($transformer): bool
     {
-        if (! $transformer instanceof HasIncludesInterface) {
+        if (!$transformer instanceof HasIncludesInterface) {
             return false;
         }
 
         $defaultIncludes = $transformer->getDefaultIncludes();
         $availableIncludes = $transformer->getAvailableIncludes();
 
-        return ! empty($defaultIncludes) || ! empty($availableIncludes);
+        return !empty($defaultIncludes) || !empty($availableIncludes);
     }
 
     /**

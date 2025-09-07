@@ -19,7 +19,7 @@ class PrimitiveTest extends TestCase
     {
         $primitive = new Primitive($this->simplePrimitive, function () {});
 
-        $this->assertTrue(is_callable($primitive->getTransformer()));
+        $this->assertTrue(\is_callable($primitive->getTransformer()));
 
         $transformer = 'thismightbeacallablestring';
         $primitive = new Primitive($this->simplePrimitive, $transformer);

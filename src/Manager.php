@@ -41,11 +41,15 @@ class Manager implements ManagerInterface
 
     /**
      * Array containing modifiers as keys and an array value of params.
+     *
+     * @var array<string, ParamBag>
      */
     protected array $includeParams = [];
 
     /**
      * The character used to separate modifier parameters.
+     *
+     * @deprecated Do not pass params as string. Use setIncludeParams() instead.
      */
     protected string $paramDelimiter = '|';
 
@@ -61,9 +65,18 @@ class Manager implements ManagerInterface
      */
     private ScopeFactoryInterface $scopeFactory;
 
-    public function __construct(ScopeFactoryInterface $scopeFactory = null)
+    /**
+     * @var ParamBag For cases then transformer wants to store some data for later use.
+     */
+    protected ParamBag $artifacts;
+
+    public function __construct(
+        ScopeFactoryInterface     $scopeFactory = null,
+        private readonly ParamBag $globalParamBag = new ParamBag([]),
+    )
     {
         $this->scopeFactory = $scopeFactory ?: new ScopeFactory();
+        $this->artifacts = new ParamBag([], true);
     }
 
     /**
@@ -72,8 +85,9 @@ class Manager implements ManagerInterface
     public function createData(
         ResourceInterface $resource,
         ?string           $scopeIdentifier = null,
-        ScopeInterface    $parentScopeInstance = null
-    ): ScopeInterface {
+        ScopeInterface    $parentScopeInstance = null,
+    ): ScopeInterface
+    {
         if ($parentScopeInstance !== null) {
             return $this->scopeFactory->createChildScopeFor($this, $parentScopeInstance, $resource, $scopeIdentifier);
         }
@@ -83,9 +97,23 @@ class Manager implements ManagerInterface
 
     public function getIncludeParams(string $include): ParamBag
     {
-        $params = isset($this->includeParams[$include]) ? $this->includeParams[$include] : [];
+        $params = $this->includeParams[$include] ?? null;
+        if ($params === null) {
+            return $this->globalParamBag;
+        }
 
-        return new ParamBag($params);
+        return $params;
+    }
+
+    public function setIncludeParams(string $includeName, array $params): self
+    {
+        $this->includeParams[$includeName] = new ParamBag($params, false);
+        return $this;
+    }
+
+    public function artifacts(): ParamBag
+    {
+        return $this->artifacts;
     }
 
     public function getRequestedIncludes(): array
@@ -100,7 +128,7 @@ class Manager implements ManagerInterface
 
     public function getSerializer(): Serializer
     {
-        if (! $this->serializer) {
+        if (!$this->serializer) {
             $this->serializer = new DataArraySerializer();
         }
 
@@ -108,33 +136,29 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param array|string $includes Array or csv string of resources to include
+     * @param array $includes Array or csv string of resources to include
+     *
+     * Include string example
+     *
+     *    "foo"
+     *    "foo:bar"
+     *    "foo:bar(baz|qux)" - Include "bar" has params "baz" and "qux".
+     *    foo:bar(baz|qux).baz - Include "bar" has params "baz" and "qux", and include "baz".
      */
-    public function parseIncludes($includes): self
+    public function parseIncludes(array $includes): self
     {
         // Wipe these before we go again
         $this->requestedIncludes = $this->includeParams = [];
-        $subRelations = '';
-
-        if (is_string($includes)) {
-            $includes = explode(',', $includes);
-        }
-
-        if (! is_array($includes)) {
-            throw new \InvalidArgumentException(
-                'The parseIncludes() method expects a string or an array. '.gettype($includes).' given'
-            );
-        }
 
         foreach ($includes as $include) {
-            list($includeName, $allModifiersStr) = array_pad(explode(':', $include, 2), 2, '');
+            [$includeName, $allModifiersStr] = array_pad(explode(':', $include, 2), 2, '');
             $a = $allModifiersStr ? explode('.', $allModifiersStr, 2) : [''];
-            list($allModifiersStr, $subRelations) = array_pad($a, 2, null);
+            [$allModifiersStr, $subRelations] = array_pad($a, 2, null);
 
             // Trim it down to a cool level of recursion
             $includeName = $this->trimToAcceptableRecursionLevel($includeName);
 
-            if (in_array($includeName, $this->requestedIncludes)) {
+            if (\in_array($includeName, $this->requestedIncludes)) {
                 continue;
             }
             $this->requestedIncludes[] = $includeName;
@@ -149,7 +173,7 @@ class Manager implements ManagerInterface
             preg_match_all('/([\w]+)(\(([^\)]+)\))?/', $allModifiersStr, $allModifiersArr);
 
             // [0] is full matched strings...
-            $modifierCount = count($allModifiersArr[0]);
+            $modifierCount = \count($allModifiersArr[0]);
 
             $modifierArr = [];
 
@@ -164,7 +188,7 @@ class Manager implements ManagerInterface
                 $modifierArr[$modifierName] = explode($this->paramDelimiter, $modifierParamStr);
             }
 
-            $this->includeParams[$includeName] = $modifierArr;
+            $this->includeParams[$includeName] = new ParamBag($modifierArr);
 
             if ($subRelations) {
                 $this->requestedIncludes[] = $this->trimToAcceptableRecursionLevel($includeName . '.' . $subRelations);
@@ -188,7 +212,7 @@ class Manager implements ManagerInterface
     {
         $this->requestedFieldsets = [];
         foreach ($fieldsets as $type => $fields) {
-            if (is_string($fields)) {
+            if (\is_string($fields)) {
                 $fields = explode(',', $fields);
             }
 
@@ -214,26 +238,16 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param array|string $excludes Array or csv string of resources to exclude
+     * @param array $excludes Array or csv string of resources to exclude
      */
-    public function parseExcludes($excludes): self
+    public function parseExcludes(array $excludes): self
     {
         $this->requestedExcludes = [];
-
-        if (is_string($excludes)) {
-            $excludes = explode(',', $excludes);
-        }
-
-        if (! is_array($excludes)) {
-            throw new \InvalidArgumentException(
-                'The parseExcludes() method expects a string or an array. '.gettype($excludes).' given'
-            );
-        }
 
         foreach ($excludes as $excludeName) {
             $excludeName = $this->trimToAcceptableRecursionLevel($excludeName);
 
-            if (in_array($excludeName, $this->requestedExcludes)) {
+            if (\in_array($excludeName, $this->requestedExcludes)) {
                 continue;
             }
 
@@ -273,8 +287,8 @@ class Manager implements ManagerInterface
             $part = array_shift($nested);
             $parsed[] = $part;
 
-            while (count($nested) > 0) {
-                $part .= '.'.array_shift($nested);
+            while (\count($nested) > 0) {
+                $part .= '.' . array_shift($nested);
                 $parsed[] = $part;
             }
         }
@@ -290,6 +304,6 @@ class Manager implements ManagerInterface
      */
     protected function trimToAcceptableRecursionLevel(string $includeName): string
     {
-        return implode('.', array_slice(explode('.', $includeName), 0, $this->recursionLimit));
+        return implode('.', \array_slice(explode('.', $includeName), 0, $this->recursionLimit));
     }
 }
