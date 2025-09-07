@@ -57,6 +57,8 @@ class IlluminatePaginatorAdapter implements PaginatorInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-suppress UndefinedInterfaceMethod
      */
     public function getCount(): int
     {

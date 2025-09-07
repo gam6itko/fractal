@@ -21,7 +21,7 @@ class JsonApiBookTransformer extends TransformerAbstract
 
     public function includeAuthor(array $book)
     {
-        if (!array_key_exists('_author', $book)) {
+        if (!\array_key_exists('_author', $book)) {
             return;
         }
 
@@ -34,7 +34,7 @@ class JsonApiBookTransformer extends TransformerAbstract
 
     public function includeAuthorWithMeta(array $book)
     {
-        if (!array_key_exists('_author', $book)) {
+        if (!\array_key_exists('_author', $book)) {
             return;
         }
 
@@ -48,7 +48,7 @@ class JsonApiBookTransformer extends TransformerAbstract
 
     public function includeCoAuthor(array $book)
     {
-        if (!array_key_exists('_co_author', $book)) {
+        if (!\array_key_exists('_co_author', $book)) {
             return;
         }
 

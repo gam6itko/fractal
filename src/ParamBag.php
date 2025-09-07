@@ -13,6 +13,9 @@ namespace League\Fractal;
 
 /**
  * A handy interface for getting at include parameters.
+ *
+ * @implements \ArrayAccess<mixed, mixed>
+ * @implements \IteratorAggregate<mixed, mixed>
  */
 class ParamBag implements \ArrayAccess, \IteratorAggregate
 {
@@ -21,8 +24,10 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
     /**
      * Create a new parameter bag instance.
      */
-    public function __construct(array $params)
-    {
+    public function __construct(
+        array                 $params,
+        private readonly bool $allowModify = false,
+    ) {
         $this->params = $params;
     }
 
@@ -32,9 +37,17 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      * @return mixed
      */
     #[\ReturnTypeWillChange]
-    public function get(string $key)
+    public function get(string $key, mixed $default = null): mixed
     {
-        return $this->__get($key);
+        return $this->params[$key] ?? $default;
+    }
+
+    public function set(string $key, mixed $value): void
+    {
+        if (false === $this->allowModify) {
+            throw new \LogicException('Modifying parameters is not permitted');
+        }
+        $this->params[$key] = $value;
     }
 
     /**
@@ -43,9 +56,9 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
      * @return mixed
      */
     #[\ReturnTypeWillChange]
-    public function __get(string $key)
+    public function __get(string $key): mixed
     {
-        return isset($this->params[$key]) ? $this->params[$key] : null;
+        return $this->params[$key] ?? null;
     }
 
     /**
@@ -59,73 +72,83 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
     /**
      * Disallow changing the value of params in the data bag via property access.
      *
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @throws \LogicException
      */
-    public function __set(string $key, $value): void
+    public function __set(string $key, mixed $value): void
     {
-        throw new \LogicException('Modifying parameters is not permitted');
+        if (false === $this->allowModify) {
+            throw new \LogicException('Modifying parameters is not permitted');
+        }
+        $this->params[$key] = $value;
     }
 
     /**
      * Disallow unsetting params in the data bag via property access.
      *
-     * @throws \LogicException
-     *
      * @return void
+     * @throws \LogicException
      */
     public function __unset(string $key): void
     {
-        throw new \LogicException('Modifying parameters is not permitted');
+        if (false === $this->allowModify) {
+            throw new \LogicException('Modifying parameters is not permitted');
+        }
+        unset($this->params[$key]);
     }
 
     /**
      * Check if a param exists in the bag via an isset() and array access.
      *
-     * @param string $key
+     * @param string $offset
      */
-    public function offsetExists($key): bool
+    public function offsetExists($offset): bool
     {
-        return $this->__isset($key);
+        return $this->__isset($offset);
     }
 
     /**
      * Get parameter values out of the bag via array access.
      *
-     * @param string $key
+     * @param string $offset
      *
      * @return mixed
      */
     #[\ReturnTypeWillChange]
-    public function offsetGet($key)
+    public function offsetGet($offset): mixed
     {
-        return $this->__get($key);
+        return $this->__get($offset);
     }
 
     /**
      * Disallow changing the value of params in the data bag via array access.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param string $offset
+     * @param mixed $value
      *
      * @throws \LogicException
      */
-    public function offsetSet($key, $value): void
+    public function offsetSet($offset, mixed $value): void
     {
-        throw new \LogicException('Modifying parameters is not permitted');
+        if (false === $this->allowModify) {
+            throw new \LogicException('Modifying parameters is not permitted');
+        }
+        $this->set($offset, $value);
     }
 
     /**
      * Disallow unsetting params in the data bag via array access.
      *
-     * @param string $key
+     * @param string $offset
      *
      * @throws \LogicException
      */
-    public function offsetUnset($key): void
+    public function offsetUnset($offset): void
     {
-        throw new \LogicException('Modifying parameters is not permitted');
+        if (false === $this->allowModify) {
+            throw new \LogicException('Modifying parameters is not permitted');
+        }
     }
 
     /**

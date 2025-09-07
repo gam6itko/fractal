@@ -127,7 +127,7 @@ class JsonApiSerializer extends ArraySerializer
 
         $result['meta'] = $meta;
 
-        if (array_key_exists('pagination', $result['meta'])) {
+        if (\array_key_exists('pagination', $result['meta'])) {
             $result['links'] = $result['meta']['pagination']['links'];
             unset($result['meta']['pagination']['links']);
         }
@@ -150,7 +150,7 @@ class JsonApiSerializer extends ArraySerializer
      */
     public function includedData(ResourceInterface $resource, array $data): array
     {
-        list($serializedData, $linkedIds) = $this->pullOutNestedIncludedData($data);
+        [$serializedData, $linkedIds] = $this->pullOutNestedIncludedData($data);
 
         foreach ($data as $value) {
             foreach ($value as $includeObject) {
@@ -160,7 +160,7 @@ class JsonApiSerializer extends ArraySerializer
 
                 $includeObjects = $this->createIncludeObjects($includeObject);
 
-                list($serializedData, $linkedIds) = $this->serializeIncludedObjectsWithCacheKey(
+                [$serializedData, $linkedIds] = $this->serializeIncludedObjectsWithCacheKey(
                     $includeObjects,
                     $linkedIds,
                     $serializedData
@@ -253,23 +253,23 @@ class JsonApiSerializer extends ArraySerializer
     {
         $objectKey = "{$object['type']}:{$object['id']}";
 
-        return in_array($objectKey, $this->rootObjects);
+        return \in_array($objectKey, $this->rootObjects);
     }
 
     protected function isCollection(array $data): bool
     {
-        return array_key_exists('data', $data) &&
-            array_key_exists(0, $data['data']);
+        return \array_key_exists('data', $data) &&
+            \array_key_exists(0, $data['data']);
     }
 
     protected function isNull(array $data): bool
     {
-        return array_key_exists('data', $data) && $data['data'] === null;
+        return \array_key_exists('data', $data) && $data['data'] === null;
     }
 
     protected function isEmpty(array $data): bool
     {
-        return array_key_exists('data', $data) && $data['data'] === [];
+        return \array_key_exists('data', $data) && $data['data'] === [];
     }
 
     protected function fillRelationships(array $data, array $relationships): array
@@ -309,7 +309,7 @@ class JsonApiSerializer extends ArraySerializer
     #[\ReturnTypeWillChange]
     protected function getIdFromData(array $data)
     {
-        if (!array_key_exists('id', $data)) {
+        if (!\array_key_exists('id', $data)) {
             throw new InvalidArgumentException(
                 'JSON API resource objects MUST have a valid id'
             );
@@ -329,7 +329,7 @@ class JsonApiSerializer extends ArraySerializer
         foreach ($data as $value) {
             foreach ($value as $includeObject) {
                 if (isset($includeObject['included'])) {
-                    list($includedData, $linkedIds) = $this->serializeIncludedObjectsWithCacheKey(
+                    [$includedData, $linkedIds] = $this->serializeIncludedObjectsWithCacheKey(
                         $includeObject['included'],
                         $linkedIds,
                         $includedData
@@ -433,7 +433,7 @@ class JsonApiSerializer extends ArraySerializer
 
     private function addIncludekeyToRelationsIfNotSet(string $includeKey, array $relationships): array
     {
-        if (!array_key_exists($includeKey, $relationships)) {
+        if (!\array_key_exists($includeKey, $relationships)) {
             $relationships[$includeKey] = [];
             return $relationships;
         }
@@ -495,7 +495,7 @@ class JsonApiSerializer extends ArraySerializer
                 'links' => [
                     'self' => "{$this->baseUrl}/{$resource['type']}/{$resource['id']}/relationships/{$relationshipKey}",
                     'related' => "{$this->baseUrl}/{$resource['type']}/{$resource['id']}/{$relationshipKey}",
-                ]
+                ],
             ],
             $resource['relationships'][$relationshipKey]
         );
@@ -512,7 +512,7 @@ class JsonApiSerializer extends ArraySerializer
             $includeType = $object['type'];
             $includeId = $object['id'];
             $cacheKey = "$includeType:$includeId";
-            if (!array_key_exists($cacheKey, $linkedIds)) {
+            if (!\array_key_exists($cacheKey, $linkedIds)) {
                 $serializedData[] = $object;
                 $linkedIds[$cacheKey] = $object;
             }

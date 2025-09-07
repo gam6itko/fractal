@@ -12,11 +12,15 @@ trait HasIncludesTrait
 {
     /**
      * Resources that can be included if requested.
+     *
+     * @var list<non-empty-string>
      */
     protected array $availableIncludes = [];
 
     /**
      * Include resources without needing it to be requested.
+     *
+     * @var list<non-empty-string>
      */
     protected array $defaultIncludes = [];
 
@@ -29,6 +33,8 @@ trait HasIncludesTrait
 
     /**
      * Getter for availableIncludes.
+     *
+     * @return list<non-empty-string>
      */
     public function getAvailableIncludes(): array
     {
@@ -37,6 +43,8 @@ trait HasIncludesTrait
 
     /**
      * Getter for defaultIncludes.
+     *
+     * @return list<non-empty-string>
      */
     public function getDefaultIncludes(): array
     {
@@ -98,7 +106,7 @@ trait HasIncludesTrait
      */
     private function includeResourceIfAvailable(
         ScopeInterface $scope,
-                       $data,
+        $data,
         array          $includedData,
         string         $include
     ): array {
@@ -133,19 +141,19 @@ trait HasIncludesTrait
         // Check if the method name actually exists
         $methodName = $this->buildMethodName($includeName);
 
-        $resource = call_user_func([$this, $methodName], $data, $params, $scope);
+        $resource = \call_user_func([$this, $methodName], $data, $params, $scope);
 
         if ($resource === null) {
             return null;
         }
 
         if (! $resource instanceof ResourceInterface) {
-            throw new \Exception(sprintf(
+            throw new \Exception(\sprintf(
                 'Invalid return value from %s::%s(). Expected %s, received %s.',
                 __CLASS__,
                 $methodName,
                 'League\Fractal\Resource\ResourceInterface',
-                is_object($resource) ? get_class($resource) : gettype($resource)
+                \is_object($resource) ? \get_class($resource) : \gettype($resource)
             ));
         }
 
@@ -177,18 +185,18 @@ trait HasIncludesTrait
         if (!isset($this->includeMethodCache[$includeName])) {
             // Check if the method name actually exists
             $methodName = 'include' . str_replace(
+                ' ',
+                '',
+                ucwords(str_replace(
+                    '_',
                     ' ',
-                    '',
-                    ucwords(str_replace(
-                        '_',
+                    str_replace(
+                        '-',
                         ' ',
-                        str_replace(
-                            '-',
-                            ' ',
-                            $includeName
-                        )
-                    ))
-                );
+                        $includeName
+                    )
+                ))
+            );
 
             $this->includeMethodCache[$includeName] = $methodName;
         }

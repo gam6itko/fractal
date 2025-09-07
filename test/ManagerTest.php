@@ -1,10 +1,13 @@
 <?php namespace League\Fractal\Test;
 
-use InvalidArgumentException;
+use League\Fractal\ArtifactsAwareInterface;
 use League\Fractal\Manager;
 use League\Fractal\ParamBag;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use League\Fractal\Resource\NullResource;
+use League\Fractal\Resource\ResourceInterface;
+use League\Fractal\Scope;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -15,35 +18,12 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Test that some includes provided returns self
-        $this->assertInstanceOf(get_class($manager), $manager->parseIncludes(['foo']));
-    }
-
-    public function testInvalidParseInclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseIncludes() method expects a string or an array. NULL given'));
-
-        $manager = new Manager();
-
-        $manager->parseIncludes(null);
-    }
-
-    public function testIceTParseInclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseIncludes() method expects a string or an array. integer given'));
-
-        $manager = new Manager();
-
-        $manager->parseIncludes(99);
+        $this->assertInstanceOf(\get_class($manager), $manager->parseIncludes(['foo']));
     }
 
     public function testParseIncludes()
     {
         $manager = new Manager();
-
-        // Does a CSV string work
-        $manager->parseIncludes('foo,bar');
-
-        $this->assertSame(['foo', 'bar'], $manager->getRequestedIncludes());
 
         // Does a big array of stuff work
         $manager->parseIncludes(['foo', 'bar', 'bar.baz']);
@@ -63,7 +43,7 @@ class ManagerTest extends TestCase
 
 
         // See if fancy syntax works
-        $manager->parseIncludes('foo:limit(5|1):order(-something):anotherparam');
+        $manager->parseIncludes(['foo:limit(5|1):order(-something):anotherparam']);
 
         $params = $manager->getIncludeParams('foo');
 
@@ -77,7 +57,7 @@ class ManagerTest extends TestCase
         $this->assertNull($params['totallymadeup']);
 
         // Relation with params and sub relation
-        $manager->parseIncludes('foo:limit(5|1):order(name).bar,baz');
+        $manager->parseIncludes(['foo:limit(5|1):order(name).bar', 'baz']);
 
         $params = $manager->getIncludeParams('foo');
 
@@ -93,35 +73,12 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Test that some excludes provided returns self
-        $this->assertInstanceOf(get_class($manager), $manager->parseExcludes(['foo']));
-    }
-
-    public function testInvalidParseExclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseExcludes() method expects a string or an array. NULL given'));
-
-        $manager = new Manager();
-
-        $manager->parseExcludes(null);
-    }
-
-    public function testIceTParseExclude()
-    {
-		$this->expectExceptionObject(new InvalidArgumentException('The parseExcludes() method expects a string or an array. integer given'));
-
-        $manager = new Manager();
-
-        $manager->parseExcludes(99);
+        $this->assertInstanceOf(\get_class($manager), $manager->parseExcludes(['foo']));
     }
 
     public function testParseExcludes()
     {
         $manager = new Manager();
-
-        // Does a CSV string work
-        $manager->parseExcludes('foo,bar');
-
-        $this->assertSame(['foo', 'bar'], $manager->getRequestedExcludes());
 
         // Does a big array of stuff work
         $manager->parseExcludes(['foo', 'bar', 'bar.baz']);
@@ -141,7 +98,7 @@ class ManagerTest extends TestCase
         $manager = new Manager();
 
         // Should limit to 10 by default
-        $manager->parseIncludes('a.b.c.d.e.f.g.h.i.j.NEVER');
+        $manager->parseIncludes(['a.b.c.d.e.f.g.h.i.j.NEVER']);
 
         $this->assertSame(
             [
@@ -159,7 +116,7 @@ class ManagerTest extends TestCase
             $manager->getRequestedIncludes()
         );
 
-        $manager->parseIncludes('a:limit(5|1).b.c.d.e.f.g.h.i.j.NEVER');
+        $manager->parseIncludes(['a:limit(5|1).b.c.d.e.f.g.h.i.j.NEVER']);
 
         $this->assertSame(
             [
@@ -179,7 +136,7 @@ class ManagerTest extends TestCase
 
         // Try setting to 3 and see what happens
         $manager->setRecursionLimit(3);
-        $manager->parseIncludes('a.b.c.NEVER');
+        $manager->parseIncludes(['a.b.c.NEVER']);
 
         $this->assertSame(
             [
@@ -190,7 +147,7 @@ class ManagerTest extends TestCase
             $manager->getRequestedIncludes()
         );
 
-        $manager->parseIncludes('a:limit(5|1).b.c.NEVER');
+        $manager->parseIncludes(['a:limit(5|1).b.c.NEVER']);
 
         $this->assertSame(
             [
@@ -240,12 +197,12 @@ class ManagerTest extends TestCase
 
         $fields = [
             'articles' => 'title,body',
-            'people' => 'name'
+            'people' => 'name',
         ];
 
         $expectedFieldset = [
-            'articles' => ['title' , 'body'],
-            'people' => ['name']
+            'articles' => ['title', 'body'],
+            'people' => ['name'],
         ];
 
         $manager->parseFieldsets($fields);
@@ -272,5 +229,97 @@ class ManagerTest extends TestCase
     public function tearDown(): void
     {
         Mockery::close();
+    }
+
+    public function testIncludeParams(): void
+    {
+        $transformer = new class($this) extends \League\Fractal\TransformerAbstract {
+            public function __construct(
+                private readonly TestCase $t,
+            ) {
+            }
+
+            public function transform(array $data): array
+            {
+                return [];
+            }
+
+            public function getAvailableIncludes(): array
+            {
+                return ['incFoo', 'incBar', 'incBaz'];
+            }
+
+            public function includeIncFoo($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(10, $params->get('foo'));
+                $this->t::assertSame(20, $params->get('bar'));
+                $this->t::assertSame(null, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('foo', true);
+
+                return new NullResource();
+            }
+
+            public function includeIncBar($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(100, $params->get('foo'));
+                $this->t::assertSame(200, $params->get('bar'));
+                $this->t::assertSame(null, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('bar', true);
+
+                return new NullResource();
+            }
+
+            public function includeIncBaz($data, ParamBag $params, Scope $s): ResourceInterface
+            {
+                $this->t::assertSame(1, $params->get('foo'));
+                $this->t::assertSame(2, $params->get('bar'));
+                $this->t::assertSame(3, $params->get('baz'));
+
+                $manager = $s->getManager();
+                $this->t::assertInstanceOf(ArtifactsAwareInterface::class, $manager);
+                $manager->artifacts()->set('baz', true);
+
+                return new NullResource();
+            }
+        };
+
+        $manager = new Manager(
+            scopeFactory: null,
+            defaultParams: [
+                'foo' => 1,
+                'bar' => 2,
+                'baz' => 3,
+            ],
+        );
+        $result = $manager
+            ->parseIncludes(['incFoo', 'incBar', 'incBaz'])
+            ->includeParams('incFoo', ['foo' => 10, 'bar' => 20])
+            ->includeParams('incBar', ['foo' => 100, 'bar' => 200])
+            ->createData(new Item([], $transformer))
+            ->toArray();
+
+        self::assertSame(true, $manager->artifacts()->get('foo'));
+        self::assertSame(true, $manager->artifacts()->get('bar'));
+        self::assertSame(true, $manager->artifacts()->get('baz'));
+
+        self::assertSame([
+            'data' => [
+                'incFoo' => [
+                    'data' => [],
+                ],
+                'incBar' => [
+                    'data' => [],
+                ],
+                'incBaz' => [
+                    'data' => [],
+                ],
+            ],
+        ], $result);
     }
 }

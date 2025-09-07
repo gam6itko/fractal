@@ -56,7 +56,7 @@ class PagerfantaPaginatorAdapter implements PaginatorInterface
      */
     public function getTotal(): int
     {
-        return count($this->paginator);
+        return \count($this->paginator);
     }
 
     /**
@@ -64,7 +64,7 @@ class PagerfantaPaginatorAdapter implements PaginatorInterface
      */
     public function getCount(): int
     {
-        return count($this->paginator->getCurrentPageResults());
+        return \count($this->paginator->getCurrentPageResults());
     }
 
     /**
@@ -80,7 +80,7 @@ class PagerfantaPaginatorAdapter implements PaginatorInterface
      */
     public function getUrl(int $page): string
     {
-        return call_user_func($this->routeGenerator, $page);
+        return \call_user_func($this->routeGenerator, $page);
     }
 
     public function getPaginator(): Pagerfanta

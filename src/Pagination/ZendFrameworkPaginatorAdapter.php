@@ -80,7 +80,7 @@ class ZendFrameworkPaginatorAdapter implements PaginatorInterface
      */
     public function getUrl(int $page): string
     {
-        return call_user_func($this->routeGenerator, $page);
+        return \call_user_func($this->routeGenerator, $page);
     }
 
     public function getPaginator(): Paginator

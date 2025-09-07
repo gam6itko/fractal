@@ -40,7 +40,7 @@ class ArraySerializerTest extends TestCase
     public function testSerializingItemResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new ArraySerializer());
 
         $resource = new Item($this->bookItemInput, new GenericBookTransformer(), 'book');
@@ -67,7 +67,7 @@ class ArraySerializerTest extends TestCase
         $manager->parseFieldsets(['book' => 'title,year']);
         $expected = [
             'title' => 'Foo',
-            'year' => 1991
+            'year' => 1991,
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -76,7 +76,7 @@ class ArraySerializerTest extends TestCase
         $expected = [
             'title' => 'Foo',
             'author' => [
-                'name' => 'Dave'
+                'name' => 'Dave',
             ],
         ];
         $this->assertSame($expected, $scope->toArray());
@@ -92,11 +92,11 @@ class ArraySerializerTest extends TestCase
             'title' => 'Foo',
             'year' => 1991,
             'author' => [
-                'name' => 'Dave'
+                'name' => 'Dave',
             ],
             'meta' => [
-                'foo' => 'bar'
-            ]
+                'foo' => 'bar',
+            ],
         ];
 
         $this->assertSame($expected, $scope->toArray());
@@ -110,7 +110,7 @@ class ArraySerializerTest extends TestCase
             ],
             'meta' => [
                 'foo' => 'bar',
-            ]
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
     }
@@ -118,7 +118,7 @@ class ArraySerializerTest extends TestCase
     public function testSerializingCollectionResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new ArraySerializer());
 
         $resource = new Collection($this->bookCollectionInput, new GenericBookTransformer(), 'books');
@@ -156,8 +156,8 @@ class ArraySerializerTest extends TestCase
         $expected = [
             'books' => [
                 ['title' => 'Foo'],
-                ['title' => 'Bar']
-            ]
+                ['title' => 'Bar'],
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -167,13 +167,13 @@ class ArraySerializerTest extends TestCase
             'books' => [
                 [
                     'title' => 'Foo',
-                    'year' => 1991
+                    'year' => 1991,
                 ],
                 [
                     'title' => 'Bar',
-                    'year' => 1997
-                ]
-            ]
+                    'year' => 1997,
+                ],
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -184,16 +184,16 @@ class ArraySerializerTest extends TestCase
                 [
                     'title' => 'Foo',
                     'author' => [
-                        'name' => 'Dave'
-                    ]
+                        'name' => 'Dave',
+                    ],
                 ],
                 [
                     'title' => 'Bar',
                     'author' => [
-                        'name' => 'Bob'
-                    ]
-                ]
-            ]
+                        'name' => 'Bob',
+                    ],
+                ],
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
 
@@ -238,19 +238,19 @@ class ArraySerializerTest extends TestCase
                 [
                     'title' => 'Foo',
                     'author' => [
-                        'name' => 'Dave'
-                    ]
+                        'name' => 'Dave',
+                    ],
                 ],
                 [
                     'title' => 'Bar',
                     'author' => [
-                        'name' => 'Bob'
-                    ]
-                ]
+                        'name' => 'Bob',
+                    ],
+                ],
             ],
             'meta' => [
                 'foo' => 'bar',
-            ]
+            ],
         ];
         $this->assertSame($expected, $scope->toArray());
     }
@@ -258,7 +258,7 @@ class ArraySerializerTest extends TestCase
     public function testSerializingNullResource()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new ArraySerializer());
 
         $resource = new NullResource($this->bookCollectionInput, new GenericBookTransformer(), 'books');
@@ -310,7 +310,7 @@ class ArraySerializerTest extends TestCase
     public function testSerializingCollectionResourceWithoutName()
     {
         $manager = new Manager();
-        $manager->parseIncludes('author');
+        $manager->parseIncludes(['author']);
         $manager->setSerializer(new ArraySerializer());
 
         $resource = new Collection($this->bookCollectionInput, new GenericBookTransformer());

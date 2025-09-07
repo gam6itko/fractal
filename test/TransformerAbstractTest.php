@@ -90,7 +90,7 @@ class TransformerAbstractTest extends TestCase
         $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
 
         $manager = new Manager();
-        $manager->parseIncludes('foo');
+        $manager->parseIncludes(['foo']);
 
         $scope = new Scope($manager, m::mock('League\Fractal\Resource\ResourceAbstract'));
         $this->assertNull($transformer->processIncludedResources($scope, ['some' => 'data']));
@@ -101,7 +101,7 @@ class TransformerAbstractTest extends TestCase
         $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
 
         $manager = new Manager();
-        $manager->parseIncludes('foo');
+        $manager->parseIncludes(['foo']);
 
         $scope = new Scope($manager, m::mock('League\Fractal\Resource\ResourceAbstract'));
         $this->assertNull($transformer->processIncludedResources($scope, ['some' => 'data']));
@@ -118,7 +118,7 @@ class TransformerAbstractTest extends TestCase
         $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
 
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
 
         $scope = new Scope($manager, m::mock('League\Fractal\Resource\ResourceAbstract'));
 
@@ -151,7 +151,7 @@ class TransformerAbstractTest extends TestCase
     public function testProcessIncludedAvailableResources()
     {
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
         $transformer = m::mock('League\Fractal\TransformerAbstract[transform]');
 
         $transformer->shouldReceive('includeBook')->once()->andReturnUsing(function ($data) {
@@ -185,8 +185,8 @@ class TransformerAbstractTest extends TestCase
         });
 
         // available includes that have been requested are excluded
-        $manager->parseIncludes('book,publisher');
-        $manager->parseExcludes('book');
+        $manager->parseIncludes(['book', 'publisher']);
+        $manager->parseExcludes(['book']);
 
         $transformer->setAvailableIncludes(['book', 'publisher']);
 
@@ -212,8 +212,8 @@ class TransformerAbstractTest extends TestCase
             });
         });
 
-        $manager->parseIncludes('book,publisher');
-        $manager->parseExcludes('book');
+        $manager->parseIncludes(['book,publisher']);
+        $manager->parseExcludes(['book']);
 
         $transformer->setDefaultIncludes(['book', 'publisher']);
 
@@ -248,7 +248,7 @@ class TransformerAbstractTest extends TestCase
         $this->expectExceptionObject(new Exception('Invalid return value from League\Fractal\TransformerAbstract::includeBook().'));
 
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
         $transformer = m::mock('League\Fractal\TransformerAbstract[transform]');
 
         $transformer->shouldReceive('includeBook')->once()->andReturn(new \stdClass());
@@ -286,7 +286,7 @@ class TransformerAbstractTest extends TestCase
     public function testIncludedItem()
     {
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
 
         $transformer = m::mock('League\Fractal\TransformerAbstract[transform]');
         $transformer->shouldReceive('includeBook')->once()->andReturnUsing(function ($data) {
@@ -304,7 +304,7 @@ class TransformerAbstractTest extends TestCase
     public function testParamBagIsProvidedForIncludes()
     {
         $manager = new Manager();
-        $manager->parseIncludes('book:foo(bar)');
+        $manager->parseIncludes(['book:foo(bar)']);
 
         $transformer = m::mock('League\Fractal\TransformerAbstract')->makePartial();
 
@@ -329,7 +329,7 @@ class TransformerAbstractTest extends TestCase
     public function testIncludedCollection()
     {
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
 
         $collectionData = [
             ['included' => 'thing'],

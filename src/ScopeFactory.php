@@ -19,8 +19,7 @@ class ScopeFactory implements ScopeFactoryInterface
         ManagerInterface  $manager,
         ResourceInterface $resource,
         ?string           $scopeIdentifier = null
-    ): ScopeInterface
-    {
+    ): ScopeInterface {
         return new Scope($manager, $resource, $scopeIdentifier);
     }
 
@@ -29,8 +28,7 @@ class ScopeFactory implements ScopeFactoryInterface
         ScopeInterface    $parentScope,
         ResourceInterface $resource,
         ?string           $scopeIdentifier = null
-    ): ScopeInterface
-    {
+    ): ScopeInterface {
         $scopeInstance = $this->createScopeFor($manager, $resource, $scopeIdentifier);
 
         // This will be the new children list of parents (parents parents, plus the parent)

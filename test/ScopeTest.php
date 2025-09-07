@@ -211,13 +211,13 @@ class ScopeTest extends TestCase
         $scope = new Scope($manager, Mockery::mock('League\Fractal\Resource\ResourceAbstract'));
         $childScope = $scope->embedChildScope('baz', Mockery::mock('League\Fractal\Resource\ResourceAbstract'));
 
-        $manager->parseExcludes('bar');
+        $manager->parseExcludes(['bar']);
 
         $this->assertFalse($scope->isExcluded('foo'));
         $this->assertTrue($scope->isExcluded('bar'));
         $this->assertFalse($scope->isExcluded('baz.bart'));
 
-        $manager->parseExcludes('baz.bart');
+        $manager->parseExcludes(['baz.bart']);
 
         $this->assertFalse($scope->isExcluded('baz'));
         $this->assertTrue($scope->isExcluded('baz.bart'));
@@ -225,10 +225,10 @@ class ScopeTest extends TestCase
 
     public function testScopeRequiresConcreteImplementation()
     {
-		$this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-		$manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager = new Manager();
+        $manager->parseIncludes(['book']);
 
         $resource = Mockery::mock('League\Fractal\Resource\ResourceAbstract', [
             ['bar' => 'baz'],
@@ -242,7 +242,7 @@ class ScopeTest extends TestCase
     public function testToArrayWithIncludes()
     {
         $manager = new Manager();
-        $manager->parseIncludes('book,price');
+        $manager->parseIncludes(['book', 'price']);
 
         $transformer = Mockery::mock('League\Fractal\TransformerAbstract')->makePartial();
         $transformer->shouldReceive('getAvailableIncludes')->twice()->andReturn(['book']);
@@ -287,7 +287,7 @@ class ScopeTest extends TestCase
         });
 
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
         $manager->setSerializer($serializer);
 
         $transformer = Mockery::mock('League\Fractal\TransformerAbstract')->makePartial();
@@ -385,7 +385,7 @@ class ScopeTest extends TestCase
      */
     public function testCreateDataWithClassFuckKnows()
     {
-		$this->expectExceptionObject(new InvalidArgumentException('Argument $resource should be an instance of League\Fractal\Resource\Item or League\Fractal\Resource\Collection'));
+        $this->expectExceptionObject(new InvalidArgumentException('Argument $resource should be an instance of League\Fractal\Resource\Item or League\Fractal\Resource\Collection'));
 
         $manager = new Manager();
 
@@ -587,16 +587,16 @@ class ScopeTest extends TestCase
         return [
             [
                 ['resourceName' => 'foo'],
-                ['data' => ['foo' => 'bar']]
+                ['data' => ['foo' => 'bar']],
             ],
             [
                 ['resourceName' => 'foo,baz'],
-                ['data' => ['foo' => 'bar', 'baz' => 'qux']]
+                ['data' => ['foo' => 'bar', 'baz' => 'qux']],
             ],
             [
                 ['resourceName' => 'inexistentField'],
-                ['data' => []]
-            ]
+                ['data' => []],
+            ],
         ];
     }
 
@@ -631,13 +631,13 @@ class ScopeTest extends TestCase
             //Don't request for mandatory field
             [
                 ['resourceName' => 'baz'],
-                ['data' => ['foo' => 'bar', 'baz' => 'qux']]
+                ['data' => ['foo' => 'bar', 'baz' => 'qux']],
             ],
             //Request required field anyway
             [
                 ['resourceName' => 'foo,baz'],
-                ['data' => ['foo' => 'bar', 'baz' => 'qux']]
-            ]
+                ['data' => ['foo' => 'bar', 'baz' => 'qux']],
+            ],
         ];
     }
 
@@ -656,7 +656,7 @@ class ScopeTest extends TestCase
         $manager = new Manager();
         $scope = new Scope($manager, $resource);
 
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
 
         $manager->parseFieldsets($fieldsetsToParse);
         $this->assertSame($expected, $scope->toArray());
@@ -668,13 +668,13 @@ class ScopeTest extends TestCase
             //Included relation was not requested
             [
                 ['resourceName' => 'foo'],
-                ['data' => ['foo' => 'bar']]
+                ['data' => ['foo' => 'bar']],
             ],
             //Included relation was requested
             [
                 ['resourceName' => 'foo,book', 'book' => 'yin'],
-                ['data' => ['foo' => 'bar', 'book' => ['yin' => 'yang']]]
-            ]
+                ['data' => ['foo' => 'bar', 'book' => ['yin' => 'yang']]],
+            ],
         ];
     }
 
@@ -699,7 +699,7 @@ class ScopeTest extends TestCase
         );
 
         $manager = new Manager();
-        $manager->parseIncludes('book');
+        $manager->parseIncludes(['book']);
         $manager->setSerializer($serializer);
 
         $transformer = $this->createTransformerWithIncludedResource('book', ['book' => ['yin' => 'yang']]);
@@ -717,13 +717,13 @@ class ScopeTest extends TestCase
             //Included relation was not requested
             [
                 ['resourceName' => 'foo'],
-                ['data' => ['foo' => 'bar']]
+                ['data' => ['foo' => 'bar']],
             ],
             //Included relation was requested
             [
                 ['resourceName' => 'foo,book', 'book' => 'yin'],
-                ['data' => ['foo' => 'bar'], 'sideloaded' => ['book' => ['yin' => 'yang']]]
-            ]
+                ['data' => ['foo' => 'bar'], 'sideloaded' => ['book' => ['yin' => 'yang']]],
+            ],
         ];
     }
 
