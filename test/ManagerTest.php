@@ -236,8 +236,7 @@ class ManagerTest extends TestCase
         $transformer = new class($this) extends \League\Fractal\TransformerAbstract {
             public function __construct(
                 private readonly TestCase $t,
-            )
-            {
+            ) {
             }
 
             public function transform(array $data): array

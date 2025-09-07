@@ -248,7 +248,7 @@ class Scope implements \JsonSerializable, ScopeInterface
      */
     public function toJson(int $options = 0): string
     {
-        $result = \json_encode($this, $options, \JSON_THROW_ON_ERROR);
+        $result = json_encode($this, $options, \JSON_THROW_ON_ERROR);
         \assert(\is_string($result));
         return $result;
     }

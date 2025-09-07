@@ -27,8 +27,7 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
     public function __construct(
         array                 $params,
         private readonly bool $allowModify = false,
-    )
-    {
+    ) {
         $this->params = $params;
     }
 
