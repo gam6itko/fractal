@@ -24,6 +24,7 @@ class ParamBagTest extends TestCase
     public function testArrayAccess()
     {
         $params = new ParamBag(['foo' => 'bar', 'baz' => 'ban']);
+        $this->assertCount(2, $params);
 
         $this->assertInstanceOf('ArrayAccess', $params);
         $this->assertArrayHasKey('foo', $params);
