@@ -17,7 +17,7 @@ namespace League\Fractal;
  * @implements \ArrayAccess<mixed, mixed>
  * @implements \IteratorAggregate<mixed, mixed>
  */
-class ParamBag implements \ArrayAccess, \IteratorAggregate
+class ParamBag implements \ArrayAccess, \IteratorAggregate, \Countable
 {
     protected array $params = [];
 
@@ -157,5 +157,10 @@ class ParamBag implements \ArrayAccess, \IteratorAggregate
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->params);
+    }
+
+    public function count(): int
+    {
+        return \count($this->params);
     }
 }
